@@ -312,14 +312,13 @@ def make_treeMap(request):
 
 
 #############################  NY ####
-def test (request) :
-    return render(request, 'stock/test.html')
+
 # todo : 오라클에서 데이터 받아와서 json 으로 보낸 후 시각화
 # todo : 관심종목의 '카테고리' 비중
 
 def load_stock_data (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.56.1/xe")
+    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -327,7 +326,7 @@ def load_stock_data (request) :
     sql_select ='select c.c_category, count (c.c_category) from stock_like sl, company c ' \
                 'where c.c_code = sl.slike_code and sl.m_id=:m_id group by c.c_category'
     cursor.execute(sql_select, m_id=m_id)
-    like_list = cursor.fetchall()
+    like_list =  [e for e in cursor.fetchall() if e[0] != '없음']
     print(like_list)
     conn.close()
 
@@ -350,7 +349,7 @@ def load_stock_data (request) :
 # JsonP 방식을 사용
 def load_stock_data2 (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.56.1/xe")
+    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -358,7 +357,7 @@ def load_stock_data2 (request) :
     sql_select = 'select c.c_category, count (c.c_category) from stock_like sl, company c ' \
                  'where c.c_code = sl.slike_code and sl.m_id=:m_id group by c.c_category'
     cursor.execute(sql_select, m_id=m_id)
-    like_list = cursor.fetchall()
+    like_list =  [e for e in cursor.fetchall() if e[0] != '없음']
     conn.close()
     print (like_list)
     json_callback = request.GET.get('callback')
@@ -375,9 +374,30 @@ def load_stock_data2 (request) :
     return response
 
 
-
 def like_cloud (request) :
-    return render (request, 'stock/like_cloud.html')
+    m_id = request.GET['m_id']
+    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
+    cursor = conn.cursor()
+    print('연결됐니? cursor : ', cursor)
+
+    column = ["category", "count"]
+    sql_select = 'select c.c_category, count (c.c_category) from stock_like sl, company c ' \
+                 'where c.c_code = sl.slike_code and sl.m_id=:m_id group by c.c_category'
+    cursor.execute(sql_select, m_id=m_id)
+    like_list =  [e for e in cursor.fetchall() if e[0] != '없음']
+    conn.close()
+    print ('like_cloud  : ', like_list)
+    json_callback = request.GET.get('callback')
+    print(json_callback)
+
+    if json_callback :
+        response = HttpResponse('%s(%s);'%(json_callback, json.dumps(like_list, ensure_ascii=False)))
+        response['Content-Type'] = "text/javascript; charset=utf-8"
+        print('JsonP')
+    else :
+        response = JsonResponse(like_list, json_dumps_params={'ensure_ascii':False} , safe=False)
+        print('Json')
+    return response
 
 
 # ------------------------------------ 위유랑
