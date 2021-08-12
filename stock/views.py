@@ -2,29 +2,14 @@
 
 import datetime
 
-from dateutil.relativedelta import relativedelta
-from django.shortcuts import render
-
 # Create your views here.
-from stock import models
-import json
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-import plotly.graph_objects as go
-from django.http import HttpResponse, JsonResponse
-from pandas_datareader import data
-from datetime import datetime
-import pandas as pd
 import chart_studio
 chart_studio.tools.set_credentials_file(username='osjang1996', api_key='Bf1UtHInSojLKXJyUKfc')
 from stock import models
-import chart_studio.plotly as py
 import cufflinks as cf
 cf.go_offline(connected=True)
 import plotly.express as pt
 
-
-from django.shortcuts import render
 from pandas_datareader import data
 
 def company_code(request):
@@ -85,43 +70,26 @@ def getQuantChart(request):
 
 # ------------------------------------- 허태준, 김나영
 
-import collections
-from time import time
-
-import numpy as np
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 import os
 import pandas as pd
-import json
-import plotly.express as px
-import plotly.graph_objects as go
-from django.template.defaultfilters import time
-import FinanceDataReader as fdr
-from pykrx import stock
 import cx_Oracle as ora
-import requests
 from bs4 import BeautifulSoup
-from datetime import datetime, time
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import cufflinks as cf
-from tqdm import tqdm
-import time
 import threading
 # Create your views here.
-from django.views.decorators.csrf import csrf_exempt
-
-
 
 
 # ########## Final #####
 # ### CompanyDetail에 종목 별 차트 띄우기 ###
 
-from flow_stock_chart import Company_Chart
+from modules.flow_stock_chart import Company_Chart
 def make_chart(request):
     code = request.GET['code'] # 스프링에서 넘어온 코드
-    chart = Company_Chart(code)
-    fig = chart.chart_json()
+    fig = Company_Chart(code).chart_json()
     fig_json = json.loads(fig)
     json_callback = request.GET.get("callback")
     if json_callback:
@@ -133,16 +101,33 @@ def make_chart(request):
 
 
 # ########### TreeMap #############
-from flow_stock_chart import TreeMap
+from modules.flow_stock_chart import TreeMap
 def make_treeMap(request):
     opt = request.GET['opt']
-    fig_json = TreeMap.treeMap_json(opt)
+    fig_json = TreeMap().treeMap_json(opt)
     json_callback = request.GET.get("callback")
     if json_callback:
         response = HttpResponse("%s(%s);" % (json_callback, json.dumps(fig_json, ensure_ascii=False)))
         response["Content-Type"] = "text/javascript; charset=utf-8"
     else:
         response = JsonResponse(fig_json, json_dumps_params={'ensure_ascii': False}, safe=False)
+    return response
+
+from modules.flow_stock_model import Stock_Clustering
+def similar(request):
+    code = request.GET['code']
+    res_df = Stock_Clustering().search(code)
+    print(res_df)
+
+    sample = res_df.sample(3)['C_NAME']  # 추천을 해야하지만 일단 랜덤으로..
+    res = {k: v for k, v in sample.items()}  # 요렇게 전달하면 될듯
+
+    json_callback = request.GET.get("callback")
+    if json_callback:
+        response = HttpResponse("%s(%s);" % (json_callback, json.dumps(res, ensure_ascii=False)))
+        response["Content-Type"] = "text/javascript; charset=utf-8"
+    else:
+        response = JsonResponse(res, json_dumps_params={'ensure_ascii': False}, safe=False)
     return response
 
 

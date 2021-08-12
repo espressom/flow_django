@@ -21,14 +21,21 @@ import cufflinks as cf
 from tqdm import tqdm
 import time
 import threading
-# Create your views here.
-from django.views.decorators.csrf import csrf_exempt
 
 
 
 
 ########## Final #####
-
+def query_OracleSQL(sql):
+    db = "flow79/kosmo7979@192.168.0.47/xe" # 본인 윈도우 IP
+    try:
+        conn = ora.connect(db)
+        cursor = conn.cursor()
+        res = pd.read_sql(sql, conn)
+    finally:
+        cursor.close()
+        conn.close()
+    return res
 
 ### CompanyDetail에 종목 별 차트 띄우기 ###
 class Company_Chart:
@@ -44,9 +51,9 @@ class Company_Chart:
         self.name = self.companies.loc[code]['C_NAME']
 
 
-
     def chart_json(self):
         df = fdr.DataReader(self.code, self.start)
+        print('{} Graph'.format(self.name))
         qf = cf.QuantFig(df,
                          title=self.name ,
                          legend='top',
@@ -58,32 +65,9 @@ class Company_Chart:
         data = qf.iplot(asFigure=True, dimensions=(850, 550)) # 크기 조절 필요
         return data.to_json() # 차트를 json 데이터로
 
-# @csrf_exempt
-# def make_chart(request):
-#     code = request.GET['code'] # 스프링에서 넘어온 코드
-#     chart = Company_Chart(code)
-#     fig = chart.chart_json()
-#     fig_json = json.loads(fig)
-#     json_callback = request.GET.get("callback")
-#     if json_callback:
-#         response = HttpResponse("%s(%s);" % (json_callback, json.dumps(fig_json, ensure_ascii=False)))
-#         response["Content-Type"] = "text/javascript; charset=utf-8"
-#     else:
-#         response = JsonResponse(fig_json, json_dumps_params={'ensure_ascii': False}, safe=False)
-#     return response
-
 
 ########### TreeMap #############
-def query_OracleSQL(sql):
-    db = "flow79/kosmo7979@192.168.56.1/xe"
-    try:
-        conn = ora.connect(db)
-        cursor = conn.cursor()
-        res = pd.read_sql(sql, conn)
-    finally:
-        cursor.close()
-        conn.close()
-    return res
+
 
 class TreeMap:
 
@@ -157,7 +141,7 @@ class TreeMap:
         # make_dataframe() # <===== 얘를 1시간 마다??
         now = datetime.now()
         title = now.strftime("%Y-%m-%d %H시 기준")
-        print(sorted(os.listdir('stock/static/treemap'))[-1])
+        # print(sorted(os.listdir('stock/static/treemap'))[-1])
         try:
             df_tm = pd.read_csv('stock/static/treemap/{} 트리맵.csv'.format(title),index_col=0) # 파일 없을때 예외처리 필요
         except:

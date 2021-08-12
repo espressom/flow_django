@@ -10,6 +10,7 @@ urlpatterns = [
     path('like_cloud', views.like_cloud),
     path('make_chart', views.make_chart),
     path('make_treeMap', views.make_treeMap),
+    path('similar', views.similar),
     path('make_company_asset_chart', views.make_company_asset_chart),
     path('make_sales_profit_chart', views.make_sales_profit_chart),
 ]
