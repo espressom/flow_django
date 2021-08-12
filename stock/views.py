@@ -122,8 +122,7 @@ def similar(request):
     code = request.GET['code']
     res_df = Stock_Clustering().search(code)
     print(res_df)
-
-    sample = res_df.sample(3)['C_NAME']  # 추천을 해야하지만 일단 랜덤으로..
+    sample = res_df.sample(3 if len(res_df) >=3 else len(res_df))['C_NAME']  # 추천을 해야하지만 일단 랜덤으로..
     res = {k: v for k, v in sample.items()}  # 요렇게 전달하면 될듯
 
     json_callback = request.GET.get("callback")
