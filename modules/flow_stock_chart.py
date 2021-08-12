@@ -21,15 +21,18 @@ import cufflinks as cf
 from tqdm import tqdm
 import time
 import threading
+from modules import database as db
 
+
+oracleDB = db.oracleDB
 
 
 
 ########## Final #####
 def query_OracleSQL(sql):
-    db = "flow79/kosmo7979@192.168.0.47/xe" # 본인 윈도우 IP
+    # db = "flow79/kosmo7979@192.168.0.47/xe" # 본인 윈도우 IP
     try:
-        conn = ora.connect(db)
+        conn = ora.connect(oracleDB)
         cursor = conn.cursor()
         res = pd.read_sql(sql, conn)
     finally:

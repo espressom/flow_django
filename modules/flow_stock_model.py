@@ -80,8 +80,6 @@ class Stock_Clustering:
         del df_final['C_CODE']
         try:
             res_df = df_final[(df_final.labels == (df_final.loc[code]['labels'])) & (df_final.index != code)]
-            # res2 = res_df.sample(3)['C_NAME']  # 추천을 해야하지만 일단 랜덤으로..
-            # {k: v for k, v in res2.items()}  # 요렇게 전달하면 될듯
         except:
             print('해당 종목 없음 => 전체 종목 리턴')
             return df_final
