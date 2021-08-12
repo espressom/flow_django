@@ -1,6 +1,10 @@
 # ------------------------------------- 장우석
 
 import datetime
+from modules import database as db
+
+
+oracleDB = db.oracleDB
 
 from dateutil.relativedelta import relativedelta
 from django.shortcuts import render
@@ -166,7 +170,7 @@ def make_chart(request):
 
 ########### TreeMap #############
 def query_OracleSQL(sql):
-    db = "flow79/kosmo7979@192.168.0.11/xe"
+    db = "flow79/kosmo7979@192.168.56.1/xe"
     try:
         conn = ora.connect(db)
         cursor = conn.cursor()
@@ -319,7 +323,7 @@ def make_treeMap(request):
 
 def load_stock_data (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.0.11/xe")
+    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -350,7 +354,7 @@ def load_stock_data (request) :
 # JsonP 방식을 사용
 def load_stock_data2 (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.0.11/xe")
+    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -377,7 +381,7 @@ def load_stock_data2 (request) :
 
 def like_cloud (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.0.11/xe")
+    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -400,59 +404,6 @@ def like_cloud (request) :
         print('Json')
     return response
 
-# 명사 분석 워드클라우드
-def voca_cloud (request) :
-    from konlpy.tag import Okt
-    from nltk import Text
-
-    v_num = request.GET['v_num']
-    conn = ora.connect("flow79/kosmo7979@192.168.0.6/xe")
-    cursor = conn.cursor()
-
-    sql_select = 'select * from voca where v_num=:v_num'
-    cursor.execute(sql_select, v_num=v_num)
-    voca_list =   cursor.fetchall()
-    print(voca_list)
-    conn.close()
-
-    okt = Okt()
-    words = Text(okt.nouns(voca_list), name='Words')
-    words = words.vocab()
-    print(words)
-
-    json_callback = request.GET.get('callback')
-    print(json_callback)
-
-    if json_callback :
-        response = HttpResponse('%s(%s);'%(json_callback, json.dumps(words, ensure_ascii=False)))
-        response['Content-Type'] = "text/javascript; charset=utf-8"
-        print('JsonP')
-    else :
-        response = JsonResponse(words, json_dumps_params={'ensure_ascii':False} , safe=False)
-        print('Json')
-    return response
-
-# 종가 예측
-def predict_close (request) :
-
-    from modules import flow_predict_close as close
-
-    c_code = request.GET['c_code']
-    res = close.predict_close(c_code).get_close()
-    json_callback = request.GET.get('callback')
-
-    if json_callback :
-        response = HttpResponse('%s(%s);'%(json_callback, json.dumps( round(res[0]) , ensure_ascii=False)))
-        response['Content-Type'] = "text/javascript; charset=utf-8"
-        print('JsonP')
-    else :
-        response = JsonResponse( round(res[0]) , json_dumps_params={'ensure_ascii':False} , safe=False)
-        print('Json')
-    return response
-
-
-
-    return round(res[0])
 
 # ------------------------------------ 위유랑
 

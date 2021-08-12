@@ -6,6 +6,7 @@ urlpatterns = [
     path('company_code', views.company_code),
     path('getQuantChart', views.getQuantChart),
     path('voca_cloud', views.voca_cloud),
+    path('test', views.test),
     path('load_stock_data', views.load_stock_data),
     path('like_cloud', views.like_cloud),
     path('make_chart', views.make_chart),
