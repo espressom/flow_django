@@ -1,9 +1,5 @@
-import collections
 from time import time
-
 import numpy as np
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
 import os
 import pandas as pd
 import json
@@ -42,30 +38,36 @@ def query_OracleSQL(sql):
 
 ### CompanyDetail에 종목 별 차트 띄우기 ###
 class Company_Chart:
+    """
+    종목 별 차트
+    """
 
-    def __init__(self, code):
+    def __init__(self):
         sql = 'SELECT c_code, c_name FROM company'
-        self.code = code
         self.companies = query_OracleSQL(sql)
         self.companies.index = self.companies['C_CODE']
-        self.now = datetime.now()  # 오늘 날짜
-        self.start = self.now - relativedelta(years=1)  # 오늘날짜 - 1년
+        self.start = datetime.now() - relativedelta(years=1)  # 오늘날짜 - 1년
         self.start = self.start.strftime('%Y-%m-%d')
-        self.name = self.companies.loc[code]['C_NAME']
 
 
-    def chart_json(self):
-        df = fdr.DataReader(self.code, self.start)
-        print('{} Graph'.format(self.name))
+
+    def chart_json(self, code):
+        """
+        :param code: 기업 코드
+        :return: 해당 기업의 최근 1년 캔들차트, 볼린저 밴드, 거래량 그래프 json Data
+        """
+        name = self.companies.loc[code]['C_NAME']
+        df = fdr.DataReader(code, self.start)
+        print('{} Graph'.format(name))
         qf = cf.QuantFig(df,
-                         title=self.name ,
+                         title=name ,
                          legend='top',
-                         name=self.name,
+                         name=name,
                          up_color='red',
                          down_color='blue')
         qf.add_bollinger_bands(periods=20, boll_std=2)
         qf.add_volume()
-        data = qf.iplot(asFigure=True, dimensions=(850, 550)) # 크기 조절 필요
+        data = qf.iplot(asFigure=True) # 크기 조절 필요 , dimensions=(850, 550)
         return data.to_json() # 차트를 json 데이터로
 
 
@@ -73,9 +75,15 @@ class Company_Chart:
 
 
 class TreeMap:
+    """
+    당일 거래량 상위종목의 섹터(등락률 그룹)별 트리맵
+    """
 
     # 거래량 상위종목 목록 받아오기
     def get_stock_names(self):
+        """
+        :return: KOSPI, KOSDAQ 거래량 상위종목 리스트
+        """
         urls = ['https://finance.naver.com/sise/sise_quant.nhn?sosok=0',
                 'https://finance.naver.com/sise/sise_quant.nhn?sosok=1'] # KOSPI, KOSDAQ
         header = {'User-Agent': 'Mozilla/5.0'}
@@ -90,7 +98,7 @@ class TreeMap:
                     stock_names.append(data)
         return stock_names
 
-    def get_dict_data(self):
+    def __get_dict_data(self):
         stock_list = self.get_stock_names()
         sql = 'SELECT c_code, c_name, c_category, c_market FROM company'
         stock_code = query_OracleSQL(sql)
@@ -125,7 +133,7 @@ class TreeMap:
         return dict_data
 
     # 얘를 1시간마다 갱신해야될것같음
-    def make_dataframe(self):
+    def __make_dataframe(self):
         dict_data = self.get_dict_data()
         df = pd.DataFrame(dict_data.values(), index=dict_data.keys())
         df.fillna(0, inplace=True)
@@ -140,7 +148,12 @@ class TreeMap:
         print(datetime.now().strftime("%Y-%m-%d %H시 기준 트리맵.csv"))
 
 
-    def treeMap_json(self, opt):
+    def treeMap_json(self, opt='volume'):
+        """
+        :param opt: 트리맵 value 기준 =>
+            'volume'(default) : 거래량, 'close' : 종가, 'fgroup' : 등락률 그룹
+        :return: 트리맵 json Data
+        """
         # make_dataframe() # <===== 얘를 1시간 마다??
         now = datetime.now()
         title = now.strftime("%Y-%m-%d %H시 기준")

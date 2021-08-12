@@ -14,6 +14,9 @@ from modules.flow_stock_chart import query_OracleSQL
 
 
 class Stock_Clustering:
+    """
+    num: 몇 개의 그룹으로 묶을지 지정 (default = 10)
+    """
 
     def __init__(self, num=10):
         self.num = num
@@ -27,7 +30,7 @@ class Stock_Clustering:
             print(f'{filename} not found')
             self.clustering()
 
-    def make_dataframe(self):
+    def __make_dataframe(self):
         prices_list = list()
         for code in tqdm(self.stock_code):
             try:
@@ -72,6 +75,10 @@ class Stock_Clustering:
         merge_df.to_csv(self.file_path)
 
     def search(self, code):
+        """
+        :param code: 기업 코드
+        :return: code와 같은 group의 DataFrame
+        """
         df_final = pd.read_csv(self.file_path,
                                index_col=0,
                                dtype=str,

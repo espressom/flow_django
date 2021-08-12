@@ -93,7 +93,7 @@ import threading
 from modules.flow_stock_chart import Company_Chart
 def make_chart(request):
     code = request.GET['code'] # 스프링에서 넘어온 코드
-    fig = Company_Chart(code).chart_json()
+    fig = Company_Chart().chart_json(code)
     fig_json = json.loads(fig)
     json_callback = request.GET.get("callback")
     if json_callback:
@@ -117,6 +117,7 @@ def make_treeMap(request):
         response = JsonResponse(fig_json, json_dumps_params={'ensure_ascii': False}, safe=False)
     return response
 
+####### 유사 종목 #######
 from modules.flow_stock_model import Stock_Clustering
 def similar(request):
     code = request.GET['code']
