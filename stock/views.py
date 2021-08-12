@@ -1,6 +1,10 @@
 # ------------------------------------- 장우석
 
 import datetime
+from modules import database as db
+
+
+oracleDB = db.oracleDB
 
 # Create your views here.
 import chart_studio
@@ -139,7 +143,7 @@ def similar(request):
 
 def load_stock_data (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
+    conn = ora.connect(oracleDB)
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -170,7 +174,7 @@ def load_stock_data (request) :
 # JsonP 방식을 사용
 def load_stock_data2 (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
+    conn = ora.connect(oracleDB)
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -197,7 +201,7 @@ def load_stock_data2 (request) :
 
 def like_cloud (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
+    conn = ora.connect(oracleDB)
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -283,7 +287,6 @@ def make_company_asset_chart(request):
     is_capital_sum = company_bs['account_nm'] == '자본총계'
     res = company_bs[is_capital_sum].iloc[0, :]
     capital_sum = [res.thstrm_amount, res.frmtrm_amount, res.bfefrmtrm_amount]
-    capital_sum
 
     x = report_index
     fig = go.Figure(go.Bar(x=x, y=capital_sum, name='자본'))
@@ -405,7 +408,6 @@ def make_sales_profit_chart(request):
         t.start()
         title = sorted(os.listdir('stock/static/financial_statements/sales_profit'))[-1][:-8]
         bubble_df = pd.read_csv('stock/static//financial_statements/sales_profit/{} 버블차트.csv'.format(title), index_col=0)
-        pass
 
     opt = request.GET['opt']
     print('opt ::::', opt)

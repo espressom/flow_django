@@ -1,14 +1,10 @@
-from django.shortcuts import render
+from modules import database as db
+
+oracleDB = db.oracleDB
+
 # 차트
-from django.http import HttpResponse, JsonResponse
-import json
 # 리눅스에서 한글 설정
-import pandas as pd
-import numpy as np
 import warnings as wr
-import matplotlib
-import matplotlib.font_manager
-import seaborn as sns
 #[f.name for f in matplotlib.font_manager.fontManager.ttflist if 'Nanum' in f.name]
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -24,7 +20,7 @@ import plotly.express as pt
 def month_cash_chart(request):
     m_id = request.GET['m_id']
     print(m_id)
-    db = "flow79/kosmo7979@192.168.56.1/xe"
+    db = oracleDB
     conn = ora.connect(db)
     cursor = conn.cursor()
     # 유출
@@ -132,7 +128,7 @@ def loadbank(bank,m_id):
     cashf_df = new_df[['FLOW', '카테고리', '내용', '적요', 'C_PRICE', '거래일자']]
     cashf_df.columns = ['C_FLOW', 'C_CATEGORY', 'C_CONTENT', 'C_METHOD', 'C_PRICE', 'C_DATE']
 
-    db = "flow79/kosmo7979@192.168.56.1/xe"
+    db = oracleDB
     conn = ora.connect(db)
     cursor = conn.cursor()
     column = ['C_FLOW', 'C_CATEGORY', 'C_CONTENT', 'C_METHOD', 'C_PRICE', 'C_DATE']
@@ -167,7 +163,6 @@ def addcashflow(request):
 import json
 
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
 
 # Create your views here.
 
@@ -176,16 +171,10 @@ import xmltodict
 import datetime
 from datetime import datetime
 
-import plotly as py
 import pandas as pd
 import numpy as np
-from pykrx import stock
 
-from pandas_datareader import data as pdr
-import yfinance as yf
 import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 # 한국은행 API 키
 API_KEY = "Y9IPT4EI62PC2SLTLQI8"
@@ -248,7 +237,7 @@ def baseRate_jsonp(request):
 ##카테고리별 지출 분포 차트###########################################
 def load_category_data (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.56.1/xe")
+    conn = ora.connect(oracleDB)
     cursor = conn.cursor()
     c_flow = '유출'
     column = ["category", "count"]
