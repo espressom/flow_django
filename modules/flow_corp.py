@@ -28,9 +28,9 @@ class Corp_Info:
 
     def __init__(self):
         self.codes_title = datetime.now().strftime("%Y-%m-%d company_codes.csv")
-        self.codes_path = 'static/financial_statements/company_codes'
+        self.codes_path = 'stock/static/financial_statements/company_codes'
         self.bubble_title = datetime.now().strftime("%Y-%m-%d 기준 버블차트.csv")
-        self.bubble_path = 'static/financial_statements/bubble'
+        self.bubble_path = 'stock/static/financial_statements/bubble'
 
         try:
             print('>>> try :::: company_codes >>>')
@@ -75,14 +75,12 @@ class Corp_Info:
         params = {'crtfc_key': 'ead0486e8d1b91cc5f958b102a18a288943e97d5'}
         res = requests.get(url, params)
 
-        # 'dataset' 폴더에 파일 생성
         with ZipFile(BytesIO(res.content)) as zipfile:
             zipfile.extractall(self.codes_path)
 
     def get_stock_corp_codes_list(self):
         print('>>> get_stock_corp_codes_list 진입 >>>')
         self.get_stock_corp_codes_zip()
-        # 'dataset' 폴더에 생성된 CORPCODE.xml 파일 읽어오기
         from xml.etree.ElementTree import parse
         xmlTree = parse('{}/CORPCODE.xml'.format(self.codes_path))
         root = xmlTree.getroot()
@@ -178,7 +176,7 @@ class Corp_Info:
         fig = px.scatter(self.bubble_df, x="sales", y="profit",
                          size="min_max_" + by, color="market",
                          hover_name="name", log_x=True, size_max=60)
-        fig.show()
+        # fig.show()
         return fig.to_json()
 
     def make_company_codes_csv(self):

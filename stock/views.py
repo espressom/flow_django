@@ -229,21 +229,16 @@ def like_cloud (request) :
 
 from modules.flow_corp import *
 
-# corp = Corp_Info()
 
 def make_company_asset_chart(request):
     print(' >>>>>> make_company_asset_chart 진입 >>>>>> ')
 
     stock_code = request.GET['stock_code']
-    print('stock_code ::::' , stock_code)
 
     corp = Corp_Info()
-
     corp_code, corp_name = corp.get_corp_code_N_name(stock_code)
-
     cfs = corp.get_fs_from_corp_code(corp_code, cfs_or_ofs='CFS')
     x_index = corp.get_report_index_from_fs(cfs)
-
     부채총계 = corp.get_data_from_fs(cfs, keyword='부채총계', bs_is='재무상태표')
     자본총계 = corp.get_data_from_fs(cfs, keyword='자본총계', bs_is='재무상태표')
 
@@ -261,33 +256,12 @@ def make_company_asset_chart(request):
 
 def make_sales_profit_chart(request):
     print(' >>>>>> make_sales_profit_chart 진입 >>>>>> ')
+    opt = request.GET['opt']
 
     corp = Corp_Info()
+    fig_json = corp.get_bubble_chart(by=opt)
+    fig_json = json.loads(fig_json)
 
-    # now = datetime.now()
-    # title = now.strftime("%Y-%m-%d 기준")
-    # try:
-    #     print('>>> try >>>')
-    #     bubble_df = pd.read_csv('stock/static/financial_statements/bubble/{} 버블차트.csv'.format(title), index_col=0)
-    # except:
-    #     print('>>> except >>>')
-    #     t = threading.Thread(target=make_bubble_chart_dataframe)
-    #     t.start()
-    #     title = sorted(os.listdir('stock/static/financial_statements/bubble'))[-1][:-8]
-    #     bubble_df = pd.read_csv('stock/static//financial_statements/bubble/{} 버블차트.csv'.format(title), index_col=0)
-    #
-    # opt = request.GET['opt']
-    # print('opt ::::', opt)
-    #
-    # bubble_df = put_min_max_scaler_on_sales_N_profit(bubble_df)
-    #
-    # fig = px.scatter(bubble_df, x="sales", y="profit",
-    #                  size="min_max_"+opt, color="market",
-    #                  hover_name="name", log_x=True, size_max=60, title=title)
-    # # fig.show()
-    # fig_json = json.loads(fig.to_json())
-
-    # print(fig.to_json())
     json_callback = request.GET.get("callback")
     if json_callback:
         response = HttpResponse("%s(%s);" % (json_callback, json.dumps(fig_json, ensure_ascii=False)))
