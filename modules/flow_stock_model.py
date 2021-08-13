@@ -31,15 +31,15 @@ class Stock_Clustering:
             self.clustering()
 
     def __make_dataframe(self):
+        yearago = datetime.now() - relativedelta(years=1)
+        yearago = yearago.strftime('%Y-%m-%d')
         prices_list = list()
-        for code in tqdm(self.stock_code):
+        k200 = stock.get_index_portfolio_deposit_file("1028")  # KOSPI 200
+        for code in tqdm(k200):
             try:
-                yearago = datetime.now() - relativedelta(years=1)
-                yearago = yearago.strftime('%Y-%m-%d')
                 prices = fdr.DataReader(code, yearago)['Close']
                 prices = pd.DataFrame(prices)
                 prices.columns = [code]
-
                 prices_list.extend([prices])
             except:
                 pass
@@ -52,26 +52,25 @@ class Stock_Clustering:
         self.movements = df.values
         normalize = Normalizer()
         array_norm = normalize.fit_transform(df)
-        df_norm = pd.DataFrame(array_norm, columns=df.columns)
-        final_df = df_norm.set_index(df.index)
+        final_df = pd.DataFrame(array_norm, columns=df.columns, index=df.index)
         return final_df
 
     def clustering(self):
-        sql = "SELECT c_code, c_name, c_category, c_market FROM company where c_market in ('KOSPI', 'KOSDAQ')"
-        df_db = query_OracleSQL(sql)
-        #         self.stock_code = df_db['C_CODE']
+        """
 
-        self.stock_code = stock.get_index_portfolio_deposit_file("1028") # KOSPI 200
-
-        df = self.make_dataframe()
+        :return: clustered_result to_csv
+        """
+        df = self.__make_dataframe()
         clusters = KMeans(self.num)  # 10개 클러스터
         clusters.fit(df)
         labels = clusters.predict(self.movements)
         clustered_result = pd.DataFrame({'labels': labels, 'codes': self.codes})
 
+        sql = "SELECT c_code, c_name, c_category, c_market FROM company where c_market ='KOSPI'"
+        df_db = query_OracleSQL(sql)
         merge_df = pd.merge(clustered_result, df_db, how='inner', left_on='codes', right_on='C_CODE')
         del merge_df['codes']
-        print(merge_df.value_counts())
+        print(merge_df.labels.value_counts())
         merge_df.to_csv(self.file_path)
 
     def search(self, code):

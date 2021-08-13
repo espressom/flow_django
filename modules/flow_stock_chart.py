@@ -134,7 +134,7 @@ class TreeMap:
 
     # 얘를 1시간마다 갱신해야될것같음
     def __make_dataframe(self):
-        dict_data = self.get_dict_data()
+        dict_data = self.__get_dict_data()
         df = pd.DataFrame(dict_data.values(), index=dict_data.keys())
         df.fillna(0, inplace=True)
         labels = ['-8% 이하', '-6 ~ -8%', '-4 ~ -6%', '-2 ~ -4%', '0 ~ -2%', '0 ~ 2%', '2 ~ 4%', '4 ~ 6%', '6 ~ 8%', '8% 이상']
@@ -165,7 +165,7 @@ class TreeMap:
             # title = hour_ago.strftime("%Y-%m-%d %H시 기준")     # 을 하려 했는데 얘까지 없으면 어짜누
             title = sorted(os.listdir('stock/static/treemap'))[-1][:-8]   # treemap 폴더에 제일 최신값 가져옴 (없으면??)
             df_tm = pd.read_csv('stock/static/treemap/{} 트리맵.csv'.format(title), index_col=0)
-            t = threading.Thread(target=self.make_dataframe)
+            t = threading.Thread(target=self.__make_dataframe)
             t.start()
             pass
 
