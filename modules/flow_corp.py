@@ -205,6 +205,7 @@ class Corp_Info:
         url = 'https://opendart.fss.or.kr/api/fnlttMultiAcnt.json'
         params = {'crtfc_key': 'ead0486e8d1b91cc5f958b102a18a288943e97d5',
                   'corp_code': corp_code, 'bsns_year': bsns_year, 'reprt_code': '11011'}
+        print(params)
         res = requests.get(url, params)
         json.loads(res.text)
         company_fs = pd.DataFrame(json.loads(res.text).get('list'))

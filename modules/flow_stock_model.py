@@ -20,7 +20,7 @@ class Stock_Clustering:
 
     def __init__(self, num=10):
         self.num = num
-        self.path = "{}/static/clustering/{}".format(os.getcwd(), num)
+        self.path = "{}/stock/static/clustering/{}".format(os.getcwd(), num)
         filename = f'clustered_result_{num}.csv'
         self.file_path = f'{self.path}/{filename}'
         if not os.path.exists(self.path):
