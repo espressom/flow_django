@@ -172,7 +172,7 @@ class TreeMap:
         labels = ['(?)', '-8% 이하', '-6 ~ -8%', '-4 ~ -6%', '-2 ~ -4%', '0 ~ -2%', '0 ~ 2%', '2 ~ 4%', '4 ~ 6%', '6 ~ 8%',
                   '8% 이상']
         col = ['#00FF00', '#00CC00', '#009900', '#006600', '#135213', '#440000', '#660000', '#960000', '#CC0000', '#FF0000',
-               '#303030']
+               '#FFFFFF']
         col.reverse()
         cmap = dict(zip(labels, col))
 
@@ -201,7 +201,7 @@ class TreeMap:
                          title=title,
                          template='presentation',
                          custom_data=c_data,
-                         height=600,width=900 # 크기 조정 필요
+                         height=900,width=1200 # 크기 조정 필요
                          )
 
         fig.data[0].hovertemplate = "종목명:%{label}<br>"+values+":%{value}<br>"+c_data[0]+":%{customdata[0]:.2f}%\
