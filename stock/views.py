@@ -1,4 +1,4 @@
-# ------------------------------------- 장우석
+#------------------------------------- 장우석
 
 import datetime
 
@@ -97,7 +97,7 @@ import json
 import plotly.express as px
 import plotly.graph_objects as go
 from django.template.defaultfilters import time
-import FinanceDataReader as fdr
+#import FinanceDataReader as fdr
 from pykrx import stock
 import cx_Oracle as ora
 import requests
@@ -116,37 +116,37 @@ from django.views.decorators.csrf import csrf_exempt
 
 ########## Final #####
 
-
-### CompanyDetail에 종목 별 차트 띄우기 ###
-class show_chart:
-
-    def __init__(self):
-        stock_code = \
-        pd.read_html('http://kind.krx.co.kr/corpgeneral/corpList.do?method=download', header=0, index_col=1)[0]
-        self.stock_code = stock_code[['회사명']]
-        self.stock_code.index = stock_code.index.map('{:06d}'.format)
-
-    def input_close(self, code):
-
-        self.now = datetime.now() # 오늘 날짜
-        self.start = self.now - relativedelta(years=1) # 오늘날짜 - 1년
-        self.start = self.start.strftime('%Y-%m-%d')
-        self.name = self.stock_code.loc[code]['회사명']
-        return self.chart_json(code, self.start)
-
-    def chart_json(self, code, start):
-
-        df = fdr.DataReader(code, start)
-        qf = cf.QuantFig(df,
-                         title=self.name ,
-                         legend='top',
-                         name=self.name,
-                         up_color='red',
-                         down_color='blue')
-        qf.add_bollinger_bands(periods=20, boll_std=2)
-        qf.add_volume()
-        data = qf.iplot(asFigure=True, dimensions=(850, 550)) # 크기 조절 필요
-        return data.to_json() # 차트를 json 데이터로
+#
+# ### CompanyDetail에 종목 별 차트 띄우기 ###
+# class show_chart:
+#
+#     def __init__(self):
+#         stock_code = \
+#         pd.read_html('http://kind.krx.co.kr/corpgeneral/corpList.do?method=download', header=0, index_col=1)[0]
+#         self.stock_code = stock_code[['회사명']]
+#         self.stock_code.index = stock_code.index.map('{:06d}'.format)
+#
+#     def input_close(self, code):
+#
+#         self.now = datetime.now() # 오늘 날짜
+#         self.start = self.now - relativedelta(years=1) # 오늘날짜 - 1년
+#         self.start = self.start.strftime('%Y-%m-%d')
+#         self.name = self.stock_code.loc[code]['회사명']
+#         return self.chart_json(code, self.start)
+#
+#     def chart_json(self, code, start):
+#
+#         df = fdr.DataReader(code, start)
+#         qf = cf.QuantFig(df,
+#                          title=self.name ,
+#                          legend='top',
+#                          name=self.name,
+#                          up_color='red',
+#                          down_color='blue')
+#         qf.add_bollinger_bands(periods=20, boll_std=2)
+#         qf.add_volume()
+#         data = qf.iplot(asFigure=True, dimensions=(850, 550)) # 크기 조절 필요
+#         return data.to_json() # 차트를 json 데이터로
 
 @csrf_exempt
 def make_chart(request):

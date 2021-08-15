@@ -4,7 +4,7 @@ import cx_Oracle as ora
 # Create your models here.
 
 def getConn():
-    conn = ora.connect("flow79/kosmo7979@192.168.56.1/xe")
+    conn = ora.connect("flow79/kosmo7979@192.168.0.6/xe")
     cursor = conn.cursor()
     print("연결성공")
     return conn,cursor
