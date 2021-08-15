@@ -173,6 +173,12 @@ def management_memberInfo(request):
         return redirect('/management/adminLogin')
     return render(request, 'management/memberInfo.html')
 
+# 회원 관리 페이지
+
+
+# 블로그 게시물 관리 페이지
+
+
 
 
 
