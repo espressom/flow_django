@@ -17,9 +17,10 @@ from django.contrib import admin
 from django.urls import path, include
 
 from config import views
+from management import views
 
 urlpatterns = [
-    path('', views.defaultPage),
+    path('', views.management_index),
     path('admin/', admin.site.urls),
     path('asset/', include('asset.urls')),
     path('stock/', include('stock.urls')),
