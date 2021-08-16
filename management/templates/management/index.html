@@ -355,7 +355,7 @@
 $(document).ready(function() {
     console.log("ajax1시작");
 	$.ajax({
-	    url : 'reqFig',
+	    url : '/management/reqFig',
 		type : 'GET',
 		dataType : 'jsonp',
 		success : function(data) {
@@ -368,7 +368,7 @@ $(document).ready(function() {
 $(document).ready(function() {
     console.log("ajax2시작");
 	$.ajax({
-	    url : 'dateFig',
+	    url : '/management/dateFig',
 		type : 'GET',
 		dataType : 'jsonp',
 		success : function(data) {

@@ -13,6 +13,9 @@ urlpatterns = [
     path('memberInfo',views.management_memberInfo),
     path('getMemAgesCountChart',views.getMemAgesCountChart),
     path('getMemGenCountChart',views.getMemGenCountChart),
+    path('memberManage',views.management_member),
+    path('memberBoard',views.management_board),
+    path('delMember',views.delMember),
 
     # ------------- dump
     path('button', views.dump_button),
