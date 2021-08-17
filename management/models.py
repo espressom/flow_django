@@ -6,7 +6,7 @@ import cx_Oracle as ora
 #---------장우석
 #오라클 접속
 def getConn():
-    conn = ora.connect("flow79/kosmo7979@192.168.0.10/xe")
+    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
     cursor = conn.cursor()
     print("연결성공")
     return conn,cursor
@@ -141,6 +141,35 @@ def getMemGenCount():
     finally:
         closeConn(conn, cursor)
     return memGenCount
+
+
+# 회원 검색
+def getMemInfom(m_id):
+    conn, cursor = getConn()
+    sql = f"select * from member where m_id='{m_id}'"
+    try:
+        cursor.execute(sql)
+        memInform = cursor.fetchone()
+        print(memInform)
+
+    except Exception as e:
+        print(e)
+    finally:
+        closeConn(conn, cursor)
+    return memInform
+
+#회원 삭제
+def delMem(m_num):
+    conn, cursor = getConn()
+    sql = f"delete from member where m_num={m_num}"
+    print(sql)
+    try:
+        cursor.execute(sql)
+        conn.commit()
+    except Exception as e:
+        print(e)
+    finally:
+        closeConn(conn, cursor)
 
 
 

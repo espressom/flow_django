@@ -26,7 +26,8 @@
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{infoList.0}} 명</div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+<!--                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>-->
+                                            <img src="/static/img/crowd-of-users.png" style="width:40px">
                                         </div>
                                     </div>
                                 </div>
@@ -44,7 +45,8 @@
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{infoList.1}} 개 </div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+<!--                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>-->
+                                            <img src="/static/img/blogging.png" style="width:40px">
                                         </div>
                                     </div>
                                 </div>
@@ -73,7 +75,8 @@
                                             </div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+<!--                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>-->
+                                            <img src="/static/img/add-user.png" style="width:40px">
                                         </div>
                                     </div>
                                 </div>
@@ -91,7 +94,8 @@
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{infoList.3}} 개</div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+<!--                                            <i class="fas fa-comments fa-2x text-gray-300"></i>-->
+                                            <img src="/static/img/copywriting.png" style="width:40px">
                                         </div>
                                     </div>
                                 </div>
@@ -351,7 +355,7 @@
 $(document).ready(function() {
     console.log("ajax1시작");
 	$.ajax({
-	    url : 'reqFig',
+	    url : '/management/reqFig',
 		type : 'GET',
 		dataType : 'jsonp',
 		success : function(data) {
@@ -364,7 +368,7 @@ $(document).ready(function() {
 $(document).ready(function() {
     console.log("ajax2시작");
 	$.ajax({
-	    url : 'dateFig',
+	    url : '/management/dateFig',
 		type : 'GET',
 		dataType : 'jsonp',
 		success : function(data) {

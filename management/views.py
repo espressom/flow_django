@@ -173,6 +173,35 @@ def management_memberInfo(request):
         return redirect('/management/adminLogin')
     return render(request, 'management/memberInfo.html')
 
+# 회원 관리 페이지
+def management_member(request):
+    if 'admin_id' not in request.session:
+        return redirect('/management/adminLogin')
+
+    # 회원을 검색한 경우
+    if 'm_id' in request.POST:
+        m_id = request.POST['m_id']
+        print(m_id)
+        memInfo = models.getMemInfom(m_id)
+        #print(memInfo)
+        return render(request, 'management/memberManage.html',{'memInfo':memInfo})
+
+    return render(request, 'management/memberManage.html')
+
+def delMember(request):
+    m_num = request.GET['m_num']
+    print('m_num ::: ',m_num)
+    models.delMem(m_num)
+    return redirect('/management/memberManage')
+
+# 블로그 게시물 관리 페이지
+def management_board(request):
+    if 'admin_id' not in request.session:
+        return redirect('/management/adminLogin')
+
+    return render(request, 'management/boardManage.html')
+
+
 
 
 
