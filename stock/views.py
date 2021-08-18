@@ -170,7 +170,7 @@ def make_chart(request):
 
 ########### TreeMap #############
 def query_OracleSQL(sql):
-    db = "flow79/kosmo7979@192.168.56.1/xe"
+    db = oracleDB
     try:
         conn = ora.connect(db)
         cursor = conn.cursor()
@@ -323,7 +323,7 @@ def make_treeMap(request):
 
 def load_stock_data (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
+    conn = ora.connect(oracleDB)
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -354,7 +354,7 @@ def load_stock_data (request) :
 # JsonP 방식을 사용
 def load_stock_data2 (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
+    conn = ora.connect(oracleDB)
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -381,7 +381,7 @@ def load_stock_data2 (request) :
 
 def like_cloud (request) :
     m_id = request.GET['m_id']
-    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
+    conn = ora.connect(oracleDB)
     cursor = conn.cursor()
     print('연결됐니? cursor : ', cursor)
 
@@ -407,20 +407,12 @@ def like_cloud (request) :
 
 # ------------------------------------ 위유랑
 
-import requests
-import json
-import plotly.graph_objects as go
-import plotly.express as px
-
-def str_to_int_processor(x):
-    try:
-        return int(x)
-    except:
-        return 0
+from modules.flow_corp import *
 
 
 def make_company_asset_chart(request):
     print(' >>>>>> make_company_asset_chart 진입 >>>>>> ')
+
     stock_code = request.GET['stock_code']
     print('stock_code ::::' , stock_code)
     # print('type(stock_code) ::::', type(stock_code))
@@ -469,22 +461,16 @@ def make_company_asset_chart(request):
     capital_sum = [res.thstrm_amount, res.frmtrm_amount, res.bfefrmtrm_amount]
     capital_sum
 
-    x = report_index
-    fig = go.Figure(go.Bar(x=x, y=capital_sum, name='자본'))
-    fig.add_trace(go.Bar(x=x, y=debt_sum, name='부채'))
+    corp = Corp_Info()
+    corp_code, corp_name = corp.get_corp_code_N_name(stock_code)
+    cfs = corp.get_fs_from_corp_code(corp_code, cfs_or_ofs='CFS')
+    x_index = corp.get_report_index_from_fs(cfs)
+    부채총계 = corp.get_data_from_fs(cfs, keyword='부채총계', bs_is='재무상태표')
+    자본총계 = corp.get_data_from_fs(cfs, keyword='자본총계', bs_is='재무상태표')
 
-    fig.update_layout(
-        title="{} 자산 추이표".format(corp_name),
-        barmode='stack',
-        yaxis_title="단위(원)",
-        yaxis_tickformat=',',
-    )
+    fig_json = corp.get_capital_debt_chart(자본총계, 부채총계, x_index, corp_name)
+    fig_json = json.loads(fig_json)
 
-    # fig.show()
-
-    fig_json = json.loads(fig.to_json())
-
-    # print(fig.to_json())
     json_callback = request.GET.get("callback")
     if json_callback:
         response = HttpResponse("%s(%s);" % (json_callback, json.dumps(fig_json, ensure_ascii=False)))
@@ -492,88 +478,6 @@ def make_company_asset_chart(request):
     else:
         response = JsonResponse(fig_json, json_dumps_params={'ensure_ascii': False}, safe=False)
     return response
-
-
-# 코스피 거래량 상위종목 목록 받아오기
-def get_kospi_stock_names():
-    url = 'https://finance.naver.com/sise/sise_quant.nhn?sosok=0'
-    header = {'User-Agent': 'Mozilla/5.0'}
-    stock_names = []
-    res = requests.get(url, headers=header)
-    soup = BeautifulSoup(res.text, 'html.parser')
-    stocks = soup.find("table", attrs={"class": "type_2"}).find_all("tr")
-    for stock in stocks:
-        if len(stock.find_all("td")) > 1:
-            data = stock.find_all("td")[1].text
-            stock_names.append(data)
-    return stock_names
-
-
-# 코스닥 거래량 상위종목 목록 받아오기
-def get_kosdaq_stock_names():
-    url = 'https://finance.naver.com/sise/sise_quant.nhn?sosok=1'
-    header = {'User-Agent': 'Mozilla/5.0'}
-    stock_names = []
-    res = requests.get(url, headers=header)
-    soup = BeautifulSoup(res.text, 'html.parser')
-    stocks = soup.find("table", attrs={"class": "type_2"}).find_all("tr")
-    for stock in stocks:
-        if len(stock.find_all("td")) > 1:
-            data = stock.find_all("td")[1].text
-            stock_names.append(data)
-    return stock_names
-
-
-# 코스피, 코스닥 거래량 상위종목 기업코드 및 이름 가져오기
-def get_corp_codes_N_names(stock_names):
-    company_codes = pd.read_csv('stock/static/financial_statements/company_codes.csv', index_col=0)
-    is_searched_company = company_codes['corp_name'].isin(stock_names)
-    company_codes = company_codes[is_searched_company]
-    company_codes['corp_code'] = company_codes['corp_code'].astype('str')
-    cond = company_codes['stock_code'] == ' '
-    company_codes = company_codes[~cond]
-    company_codes['corp_code'] = company_codes['corp_code'].str.zfill(8)
-    corp_codes_N_names = company_codes[['corp_code', 'corp_name']].values.tolist()
-    return corp_codes_N_names
-
-
-def make_sales_profit_list(df_pool, corp_codes_N_names, market):
-    url = 'https://opendart.fss.or.kr/api/fnlttMultiAcnt.json'
-    for code, name in corp_codes_N_names:
-        params = {'crtfc_key':'ead0486e8d1b91cc5f958b102a18a288943e97d5',
-              'corp_code':code, 'bsns_year':'2020', 'reprt_code':'11011'}
-        res = requests.get(url,params)
-        data = json.loads(res.text).get('list')
-        try:
-            sales = int(data[22].get('thstrm_amount').replace(',',''))
-            profit = int(data[24].get('thstrm_amount').replace(',',''))
-            df_pool.append([name, sales, profit, market])
-        except:
-            pass
-    return df_pool
-
-
-def put_min_max_scaler_on_sales_N_profit(bubble_df):
-    max_p = bubble_df.profit.max()
-    min_p = bubble_df.profit.min()
-    max_s = bubble_df.sales.max()
-    min_s = bubble_df.sales.min()
-    bubble_df['min_max_profit'] = bubble_df.profit.apply(lambda x : (x - min_p) / (max_p - min_p))
-    bubble_df['min_max_sales'] = bubble_df.sales.apply(lambda x : (x - min_s) / (max_s - min_s))
-    return bubble_df
-
-def make_bubble_chart_dataframe():
-    kospi_corp_codes_N_names = get_corp_codes_N_names(get_kospi_stock_names())
-    kosdaq_corp_codes_N_names = get_corp_codes_N_names(get_kosdaq_stock_names())
-
-    df_pool = []
-    df_pool = make_sales_profit_list(df_pool, kospi_corp_codes_N_names, 'KOSPI')
-    df_pool = make_sales_profit_list(df_pool, kosdaq_corp_codes_N_names, 'KOSDAQ')
-
-    bubble_df = pd.DataFrame(df_pool, columns=['name', 'sales', 'profit', 'market'])
-
-    bubble_df.to_csv('stock/static/financial_statements/sales_profit/'+datetime.now().strftime("%Y-%m-%d 기준 버블차트.csv"))
-    print(datetime.now().strftime("%Y-%m-%d 기준 버블차트.csv"))
 
 
 def make_sales_profit_chart(request):
@@ -592,17 +496,11 @@ def make_sales_profit_chart(request):
         pass
 
     opt = request.GET['opt']
-    print('opt ::::', opt)
 
-    bubble_df = put_min_max_scaler_on_sales_N_profit(bubble_df)
+    corp = Corp_Info()
+    fig_json = corp.get_bubble_chart(by=opt)
+    fig_json = json.loads(fig_json)
 
-    fig = px.scatter(bubble_df, x="sales", y="profit",
-                     size="min_max_"+opt, color="market",
-                     hover_name="name", log_x=True, size_max=60, title=title)
-    # fig.show()
-    fig_json = json.loads(fig.to_json())
-
-    # print(fig.to_json())
     json_callback = request.GET.get("callback")
     if json_callback:
         response = HttpResponse("%s(%s);" % (json_callback, json.dumps(fig_json, ensure_ascii=False)))
