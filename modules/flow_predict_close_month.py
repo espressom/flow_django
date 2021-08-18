@@ -18,14 +18,14 @@ class predict_close :
     
     def __init__ (self, code) :
         today = self.datetime.today().strftime("%Y%m%d")  
-        monthago = (self.datetime.today() - self.timedelta(30)).strftime("%Y%m%d")
+        monthago = (self.datetime.today() - self.timedelta(365)).strftime("%Y%m%d")
         self.df =  self.stock.get_market_ohlcv_by_date( monthago , today, code)['종가']
         self.days = [ [j+1] for j in range(len(self.df)) ]
         
     def get_close (self) :
         rbf_srv = self.SVR(kernel = 'rbf', C=1000, gamma=0.05)
         rbf_srv.fit(self.days, self.df)
-        day = [[ len(self.days)+1 ]]
+        day = [[ len(self.days)+30 ]]
         return rbf_srv.predict(day) # 예측 종가 리턴
 
 

@@ -11,6 +11,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from modules import flow_predict_close
+from modules import flow_predict_close_month
 from stock import models
 import json
 from datetime import datetime
@@ -403,6 +404,29 @@ def like_cloud (request) :
         response = JsonResponse(like_list, json_dumps_params={'ensure_ascii':False} , safe=False)
         print('Json')
     return response
+
+
+# 종가 예측 모듈 적용
+def predict_close (request) :
+    c_code = request.GET['c_code']
+    close = round(flow_predict_close.predict_close(c_code).get_close()[0])
+    month_close = round(flow_predict_close_month.predict_close(c_code).get_close()[0])
+
+    print (c_code , "close prediction  : ", close)
+    print(c_code, "close prediction (month)  : ", month_close)
+
+    json_callback = request.GET.get('callback')
+    print(json_callback)
+
+    if json_callback :
+        response = HttpResponse('%s(%s);'%(json_callback, json.dumps([close, month_close], ensure_ascii=False)))
+        response['Content-Type'] = "text/javascript; charset=utf-8"
+        print('JsonP')
+    else :
+        response = JsonResponse([close, month_close], json_dumps_params={'ensure_ascii':False} , safe=False)
+        print('Json')
+    return response
+
 
 
 # ------------------------------------ 위유랑
