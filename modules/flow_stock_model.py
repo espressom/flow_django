@@ -63,7 +63,7 @@ class Stock_Clustering:
         df = self.__make_dataframe()
         clusters = KMeans(self.num)  # 10개 클러스터
         clusters.fit(df)
-        labels = clusters.predict(self.movements)
+        labels = clusters.labels_
         clustered_result = pd.DataFrame({'labels': labels, 'codes': self.codes})
 
         sql = "SELECT c_code, c_name, c_category, c_market FROM company where c_market ='KOSPI'"

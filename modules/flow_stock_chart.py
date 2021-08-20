@@ -101,14 +101,14 @@ class TreeMap:
     def __get_dict_data(self):
         stock_list = self.get_stock_names()
         sql = 'SELECT c_code, c_name, c_category, c_market FROM company'
-        stock_code = query_OracleSQL(sql)
+        companies = query_OracleSQL(sql)
         dict_data = dict()
         count = 0
-        stock_code = stock_code[(stock_code['C_NAME'].isin(stock_list))]
-        for company in tqdm(stock_code['C_NAME']):
-            code = stock_code[stock_code['C_NAME'] == company]['C_CODE'].values[0].strip()
-            category = stock_code[stock_code['C_NAME'] == company]['C_CATEGORY'].values[0].strip()
-            market = stock_code[stock_code['C_NAME'] == company]['C_MARKET'].values[0].strip()
+        companies = companies[(companies['C_NAME'].isin(stock_list))]
+        for company in tqdm(companies['C_NAME']):
+            code = companies[companies['C_NAME'] == company]['C_CODE'].values[0].strip()
+            category = companies[companies['C_NAME'] == company]['C_CATEGORY'].values[0].strip()
+            market = companies[companies['C_NAME'] == company]['C_MARKET'].values[0].strip()
             header = {
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit 537.36 (KHTML, like Gecko) Chrome"}
             page = 1
@@ -161,12 +161,10 @@ class TreeMap:
         try:
             df_tm = pd.read_csv('stock/static/treemap/{} 트리맵.csv'.format(title),index_col=0) # 파일 없을때 예외처리 필요
         except:
-            # hour_ago = datetime.now() - relativedelta(hours=1) # 현재 시간 파일이 없으면 1시간 전 파일
-            # title = hour_ago.strftime("%Y-%m-%d %H시 기준")     # 을 하려 했는데 얘까지 없으면 어짜누
-            title = sorted(os.listdir('stock/static/treemap'))[-1][:-8]   # treemap 폴더에 제일 최신값 가져옴 (없으면??)
-            df_tm = pd.read_csv('stock/static/treemap/{} 트리맵.csv'.format(title), index_col=0)
             t = threading.Thread(target=self.__make_dataframe)
             t.start()
+            title = sorted(os.listdir('stock/static/treemap'))[-1][:-8]   # treemap 폴더에 제일 최신값 가져옴 (없으면??)
+            df_tm = pd.read_csv('stock/static/treemap/{} 트리맵.csv'.format(title), index_col=0)
             pass
 
         labels = ['(?)', '-8% 이하', '-6 ~ -8%', '-4 ~ -6%', '-2 ~ -4%', '0 ~ -2%', '0 ~ 2%', '2 ~ 4%', '4 ~ 6%', '6 ~ 8%',
@@ -210,8 +208,6 @@ class TreeMap:
             "
         fig.data[0].texttemplate = texttemplate
         fig.update_layout(margin=dict(t=50, l=25, r=25, b=25))
-        # fig.show()
-        # fig.write_html("treemap.html")
         fig_json = json.loads(fig.to_json())
         return fig_json
 
