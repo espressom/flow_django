@@ -127,6 +127,7 @@ class TreeMap:
                 dict_data[company]['등락률'] = dict_data[company].전일비 / data.iloc[1].종가 * 100
             dict_data[company]['카테고리'] = category
             dict_data[company]['마켓'] = market
+            dict_data[company]['코드'] = code
             count += 1
             if count % 99 == 0:
                 time.sleep(2)
@@ -148,7 +149,7 @@ class TreeMap:
         print(datetime.now().strftime("%Y-%m-%d %H시 기준 트리맵.csv"))
 
 
-    def treeMap_json(self, opt='volume'):
+    def treeMap_json(self, m_id='non-login', opt='volume'):
         """
         :param opt: 트리맵 value 기준 =>
             'volume'(default) : 거래량, 'close' : 종가, 'fgroup' : 등락률 그룹
@@ -159,7 +160,7 @@ class TreeMap:
         title = now.strftime("%Y-%m-%d %H시 기준")
         # print(sorted(os.listdir('stock/static/treemap'))[-1])
         try:
-            df_tm = pd.read_csv('stock/static/treemap/{} 트리맵.csv'.format(title),index_col=0) # 파일 없을때 예외처리 필요
+            df_tm = pd.read_csv('stock/static/treemap/{} 트리맵.csv'.format(title),index_col=0,converters={'코드':str}) # 파일 없을때 예외처리 필요
         except:
             t = threading.Thread(target=self.__make_dataframe)
             t.start()
@@ -178,18 +179,21 @@ class TreeMap:
         if opt == 'volume':
             path = ['마켓', '카테고리', df_tm.index]
             values = '거래량'
-            c_data = ['등락률', '전일비', '종가']
-            texttemplate = "%{label}<br>%{customdata[2]}<br>%{customdata[0]:.2f}%"
+            c_data = ['등락률', '전일비', '종가', '코드']
+            texttemplate = "<a href='companyDetail?c_code=%{customdata[3]:06d}&m_id="+m_id\
+                           +"'>%{label}</a><br>%{customdata[2]}<br>%{customdata[0]:.2f}%"
         elif opt == 'close':
             path = ['마켓', '카테고리', df_tm.index]
             values = '종가'
-            c_data = ['등락률', '전일비', '거래량']
-            texttemplate = "%{label}<br>%{value}<br>%{customdata[0]:.2f}%"
+            c_data = ['등락률', '전일비', '거래량', '코드']
+            texttemplate = "<a href='companyDetail?c_code=%{customdata[3]:06d}&m_id="+m_id\
+                           +"'>%{label}</a><br>%{value}<br>%{customdata[0]:.2f}%"
         elif opt == 'fgroup':
             path = ['마켓', '등락률그룹', df_tm.index]
             values = '거래량'
-            c_data = ['등락률', '전일비', '종가']
-            texttemplate = "%{label}<br>%{customdata[2]}<br>%{customdata[0]:.2f}%"
+            c_data = ['등락률', '전일비', '종가', '코드']
+            texttemplate = "<a href='companyDetail?c_code=%{customdata[3]:06d}&m_id="+m_id\
+                           +"'>%{label}</a><br>%{customdata[2]}<br>%{customdata[0]:.2f}%"
 
         fig = px.treemap(df_tm,
                          path=path,

@@ -5,6 +5,8 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from tqdm import tqdm
 import os
+import joblib
+import threading
 
 from sklearn.preprocessing import Normalizer
 from sklearn.cluster import KMeans
@@ -21,21 +23,31 @@ class Stock_Clustering:
     def __init__(self, num=10):
         self.num = num
         self.path = "{}/stock/static/clustering/{}".format(os.getcwd(), num)
-        filename = f'clustered_result_{num}.csv'
+        self.now = datetime.now()
+        filename = f'clustered_result_{num}_{self.now.strftime("%Y%m%d")}.csv'
+        modelname = f'clusters_{self.num}_{self.now.strftime("%Y%m%d")}.pkl'
         self.file_path = f'{self.path}/{filename}'
+        self.model_path = f'{self.path}/{modelname}'
         if not os.path.exists(self.path):
             os.makedirs(self.path)
             print(f'make dir :: {self.path}')
-        if filename not in os.listdir(self.path):
+        if modelname not in os.listdir(self.path):
             print(f'{filename} not found')
-            self.clustering()
+            t = threading.Thread(target=self.clustering)
+            t.start()
 
-    def __make_dataframe(self):
-        yearago = datetime.now() - relativedelta(years=1)
+    def __make_dataframe(self,codes):
+        """
+        해당 종목들의 1년치 주가 움직임을 데이트프레임으로
+
+        :param codes: 종목 코드의 리스트
+        :return: 종목들의 1년치 주가 움직임을 데이트프레임으로
+        """
+        yearago = self.now - relativedelta(years=1)
         yearago = yearago.strftime('%Y-%m-%d')
         prices_list = list()
-        k200 = stock.get_index_portfolio_deposit_file("1028")  # KOSPI 200
-        for code in tqdm(k200):
+
+        for code in tqdm(codes):
             try:
                 prices = fdr.DataReader(code, yearago)['Close']
                 prices = pd.DataFrame(prices)
@@ -57,16 +69,20 @@ class Stock_Clustering:
 
     def clustering(self):
         """
+        클러스터링 모델 저장, Kospi200 종목 클러스터링 결과 저장
 
-        :return: clustered_result to_csv
+        :return: clustered_result_{num}_{date}.csv & clusters_{num}_{today}.pkl
         """
-        df = self.__make_dataframe()
+        k200 = stock.get_index_portfolio_deposit_file("1028")  # KOSPI 200
+        df = self.__make_dataframe(k200)
         clusters = KMeans(self.num)  # 10개 클러스터
         clusters.fit(df)
         labels = clusters.labels_
+        joblib.dump(clusters, f'{self.model_path}')
+
         clustered_result = pd.DataFrame({'labels': labels, 'codes': self.codes})
 
-        sql = "SELECT c_code, c_name, c_category, c_market FROM company where c_market ='KOSPI'"
+        sql = "SELECT c_code, c_name, c_category FROM company where c_market ='KOSPI'"
         df_db = query_OracleSQL(sql)
         merge_df = pd.merge(clustered_result, df_db, how='inner', left_on='codes', right_on='C_CODE')
         del merge_df['codes']
@@ -84,11 +100,18 @@ class Stock_Clustering:
                                converters={'labels': int})
         df_final.index = df_final['C_CODE']
         del df_final['C_CODE']
-        try:
-            res_df = df_final[(df_final.labels == (df_final.loc[code]['labels'])) & (df_final.index != code)]
-        except:
-            print('해당 종목 없음 => 전체 종목 리턴')
-            return df_final
+        if code in df_final.index: # code가 KOSPI200 안에 있으면 이미 저장된 csv 파일 이용
+            res_df = df_final[(df_final.labels == (df_final.loc[code]['labels']))
+                              & (df_final.index != code)]
+        else:
+            model = joblib.load(self.model_path) # 없으면 모델을 통해 예측
+            final_df = self.__make_dataframe([code])
+            try:
+                labels = model.predict(final_df.values)
+                res_df = df_final[df_final.labels == labels[0]]
+            except:
+                print(f'예외 발생 => 전체 종목 리턴')
+                return df_final
         return res_df
 
 

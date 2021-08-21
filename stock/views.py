@@ -108,7 +108,9 @@ def make_chart(request):
 from modules.flow_stock_chart import TreeMap
 def make_treeMap(request):
     opt = request.GET['opt']
-    fig_json = TreeMap().treeMap_json(opt)
+    m_id = request.GET['m_id']
+    # m_id = 'non-login' if m_id is None else m_id
+    fig_json = TreeMap().treeMap_json(m_id, opt)
     json_callback = request.GET.get("callback")
     if json_callback:
         response = HttpResponse("%s(%s);" % (json_callback, json.dumps(fig_json, ensure_ascii=False)))
