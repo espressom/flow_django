@@ -1,2 +1,2 @@
-ip = '192.168.0.13'
+ip = '192.168.0.9'
 oracleDB = 'flow79/kosmo7979@{}/xe'.format(ip)

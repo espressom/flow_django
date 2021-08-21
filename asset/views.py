@@ -5,7 +5,6 @@ oracleDB = db.oracleDB
 # 차트
 # 리눅스에서 한글 설정
 import warnings as wr
-#[f.name for f in matplotlib.font_manager.fontManager.ttflist if 'Nanum' in f.name]
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 # 유니코드 깨짐현상 해결
@@ -17,9 +16,10 @@ import cx_Oracle as ora
 import plotly.express as pt
 from modules import bank_connect as bankconn
 from modules import asset_chart as achart
-import plotly.graph_objects as go
+
 # 월 카테고리 차트 만들기
 def category_chart(request):
+    print(' >>> category_chart 진입 >>>')
     m_id = request.GET['m_id']
     fig = achart.asset_chart.category_cash(m_id)
     fig_json = json.loads(fig.to_json())
@@ -34,6 +34,7 @@ def category_chart(request):
 
 # 월 유입유출 차트 만들기...0803
 def month_cash_chart(request):
+    print(' >>> month_cash_chart 진입 >>>')
     m_id = request.GET['m_id']
     fig = achart.asset_chart.month_cash(m_id)
     fig_json = json.loads(fig.to_json())
@@ -48,6 +49,7 @@ def month_cash_chart(request):
 
 
 def addcashflow(request):
+    print(' >>> addcashflow 진입 >>>')
     bank = request.GET['bank']
     m_id = request.GET['m_id']
     print(bank)
@@ -58,25 +60,18 @@ def addcashflow(request):
     else:
         msg = "실패"
 
-    return msg
-
+    response = JsonResponse(msg, json_dumps_params={'ensure_ascii': False}, safe=False)
+    # return msg
+    return response
 
 # ------------------------------------- 정주은
-
 import json
-
 from django.http import HttpResponse, JsonResponse
-
-# Create your views here.
-
 import requests
 import xmltodict
 import datetime
 from datetime import datetime
-
 import pandas as pd
-import numpy as np
-
 import plotly.express as px
 
 # 한국은행 API 키

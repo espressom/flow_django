@@ -12,5 +12,9 @@ urlpatterns = [
     path('similar', views.similar),
     path('make_company_asset_chart', views.make_company_asset_chart),
     path('make_sales_profit_chart', views.make_sales_profit_chart),
+    path('makeCountryStockIndex',views.makeCountryStockIndex),
     path('predict_close', views.predict_close),
+    path('get_company_figure', views.get_company_figure),
+    path('myPortfolio',views.myPortfolioChart),
+    path('effPortfolio',views.effPortfolio),
 ]

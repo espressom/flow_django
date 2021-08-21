@@ -285,7 +285,7 @@ class Asset_Accounter:
     def status_calculator(self, dividend, divisor, opt):
         index = dividend / divisor
         print('index :::: ', index)
-        if opt == '유동비율':
+        if opt == '유동성 비율':
             if index > 2:
                 result = '좋음'
             elif index > 1:
@@ -293,7 +293,7 @@ class Asset_Accounter:
             else:
                 result = '주의'
             return result
-        elif opt == '부채비율':
+        elif opt == '안정성 비율':
             if index > 2:
                 result = '주의'
             elif index > 1:
@@ -301,12 +301,12 @@ class Asset_Accounter:
             else:
                 result = '좋음'
             return result
-        elif opt == '수익비율':
+        elif opt == '수익성 비율':
             return str(round(index * 100)) + '%'
         else:
             return 'Undefined'
 
-    def get_status_plot(self, labels, values, opt='유동비율'):
+    def get_status_plot(self, labels, values, opt='유동성 비율'):
         """
         설명 : 기업 재무건전성 차트
         속성 :
@@ -319,6 +319,17 @@ class Asset_Accounter:
         print(labels[1], ':', values[1])
         fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.7)])
         fig.update_layout(
+            title={
+                'text': opt,
+                'y': 0.9,
+                'x': 0.46},
+            font={
+                'size': 20,
+            },
             annotations=[dict(text=result, font_size=50, showarrow=False)]
         )
-        fig.show()
+        fig.update_traces(
+            marker=dict(colors=['#106eea', '#dfdfdf']))
+
+        # fig.show()
+        return fig.to_json()

@@ -1,12 +1,14 @@
 from django.db import models
 import cx_Oracle as ora
+import modules.database as db
 
+oracleDB = db.oracleDB
 
 # Create your models here.
 #---------장우석
 #오라클 접속
 def getConn():
-    conn = ora.connect("flow79/kosmo7979@192.168.0.17/xe")
+    conn = ora.connect(oracleDB)
     cursor = conn.cursor()
     print("연결성공")
     return conn,cursor
@@ -23,7 +25,7 @@ def getAdminNum(info):
     try:
         cursor.execute(sql)
         adminNum=cursor.fetchone()
-        print(adminNum)
+        # print(adminNum)
     except Exception as e:
         print(e)
     finally:
@@ -37,7 +39,7 @@ def getRequestLog():
     try:
         cursor.execute("select request,count(*) from log group by request order by count(*) desc")
         reqList=cursor.fetchall()
-        print(likeList[0][0])
+        # print(reqList[0][0])
     except Exception as e:
         print(e)
     finally:
@@ -50,7 +52,7 @@ def getDateLog():
     try:
         cursor.execute("select to_char(log_date,'yy-MM-dd'), count(*) from log group by to_char(log_date,'yy-MM-dd') order by to_char(log_date,'yy-MM-dd') asc")
         dateList=cursor.fetchall()
-        print(likeList[0][0])
+        # print(dateList[0][0])
     except Exception as e:
         result = 'c'
         print(e)
@@ -65,7 +67,7 @@ def getMemCount():
     try:
         cursor.execute(sql)
         memCount=cursor.fetchone()
-        print(memCount)
+        # print(memCount)
     except Exception as e:
         print(e)
     finally:
@@ -79,7 +81,7 @@ def getBrdCount():
     try:
         cursor.execute(sql)
         brdCount=cursor.fetchone()
-        print(brdCount)
+        # print(brdCount)
     except Exception as e:
         print(e)
     finally:
@@ -93,7 +95,7 @@ def getToMemCount():
     try:
         cursor.execute(sql)
         toMemCount=cursor.fetchone()
-        print(toMemCount)
+        # print(toMemCount)
     except Exception as e:
         print(e)
     finally:
@@ -107,7 +109,7 @@ def getToBrdCount():
     try:
         cursor.execute(sql)
         toBrdCount=cursor.fetchone()
-        print(toBrdCount)
+        # print(toBrdCount)
     except Exception as e:
         print(e)
     finally:
@@ -121,7 +123,7 @@ def getMemAgesCount():
     try:
         cursor.execute(sql)
         memAgesCount=cursor.fetchall()
-        print(memAgesCount)
+        # print(memAgesCount)
     except Exception as e:
         print(e)
     finally:
@@ -135,7 +137,7 @@ def getMemGenCount():
     try:
         cursor.execute(sql)
         memGenCount=cursor.fetchall()
-        print(memGenCount)
+        # print(memGenCount)
     except Exception as e:
         print(e)
     finally:
@@ -146,7 +148,7 @@ def getMemGenCount():
 # 회원 검색
 def getMemInfom(m_id):
     conn, cursor = getConn()
-    sql = f"select * from member where m_id='{m_id}'"
+    sql = f"select * from member where m_id='{m_id}' and m_division=1"
     try:
         cursor.execute(sql)
         memInform = cursor.fetchone()
@@ -161,7 +163,7 @@ def getMemInfom(m_id):
 #회원 삭제
 def delMem(m_num):
     conn, cursor = getConn()
-    sql = f"delete from member where m_num={m_num}"
+    sql = f"update member set m_division = 9 where m_num = '{m_num}'"
     print(sql)
     try:
         cursor.execute(sql)
